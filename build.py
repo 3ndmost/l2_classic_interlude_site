@@ -16,6 +16,8 @@ import os
 import re
 import subprocess
 
+import pages
+
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
 REPOS = [
@@ -259,6 +261,26 @@ def summary(body, limit=240):
 	return cut[:stop + 1] if stop > limit // 2 else cut.rsplit(' ', 1)[0] + '…'
 
 
+# Screenshots for highlights: Windows' own screenshot folder; "shots: 2026-11-13 215535" in highlights.md picks
+# "Screenshot 2026-11-13 215535.png", made into docs/shots/<date-time>.jpg (at most 1280 wide) with ffmpeg once.
+SHOTS_SRC = os.path.join(os.path.expanduser('~'), 'Pictures', 'Screenshots')
+SHOTS_OUT = os.path.join(HERE, 'docs', 'shots')
+
+
+def screenshot(name):
+	"""'2026-11-13 215535' -> 'shots/2026-11-13-215535.jpg' (made if missing), or None if there is no such picture."""
+	target = re.sub(r'[^0-9A-Za-z-]+', '-', name).strip('-') + '.jpg'
+	out = os.path.join(SHOTS_OUT, target)
+	if not os.path.exists(out):
+		src = os.path.join(SHOTS_SRC, 'Screenshot %s.png' % name)
+		if not os.path.exists(src):
+			print('screenshot not found:', name)
+			return None
+		os.makedirs(SHOTS_OUT, exist_ok=True)
+		subprocess.run(['ffmpeg', '-v', 'error', '-y', '-i', src, '-vf', "scale='min(1280,iw)':-2", '-q:v', '4', out], check=True)
+	return 'shots/' + target
+
+
 def highlights(data):
 	"""Per day, newest first: (day, [(area, title, description, [commit hashes])], changes that day, hand-written)."""
 	manual = manual_highlights()
@@ -282,12 +304,15 @@ def highlights(data):
 					match = next((c['h'] for c in commits if c['h'].startswith(prefix[:7])), None)
 					if match:
 						refs.append(match)
-				items.append((area, title, desc, refs))
+				shots = []
+				if len(parts) > 3 and parts[3].lower().startswith('shots:'):
+					shots = [screenshot(s.strip()) for s in parts[3][6:].split(',') if s.strip()]
+				items.append((area, title, desc, refs, [s for s in shots if s]))
 			out.append((day, items, len(commits), True))
 			continue
 		ranked = sorted((c for c in commits if score(c) >= 0), key=score, reverse=True)[:PER_DAY]
 		if ranked:
-			out.append((day, [(c['a'], c['s'], summary(c['b']), [c['h']]) for c in ranked], len(commits), False))
+			out.append((day, [(c['a'], c['s'], summary(c['b']), [c['h']], []) for c in ranked], len(commits), False))
 	return out
 
 
@@ -343,21 +368,24 @@ def page(data, feats):
 	for day, items, total, manual in highlights(data):
 		label = datetime.date.fromisoformat(day).strftime('%A %d %B %Y')
 		hl += '<article class="hday"><h3>%s <span class="cnt">%d change%s%s</span></h3><ul>' % (e(label), total, '' if total == 1 else 's', '' if manual else ' · picked automatically')
-		for area, title, desc, refs in items:
+		for area, title, desc, refs, shots in items:
 			links = ''
 			if refs:
 				links = '<a class="more" href="#c-%s">More in the change log</a>' % refs[0]
 				if len(refs) > 1:
 					links += '<span class="also">also ' + ' '.join('<a href="#c-%s">%s</a>' % (h, h[:7]) for h in refs[1:]) + '</span>'
-			hl += '<li>%s<div class="htext"><div class="htitle">%s%s</div>%s%s</div></li>' % (
+			gallery = ''.join('<a class="shot" href="%s" target="_blank" rel="noopener"><img src="%s" alt="Screenshot: %s" loading="lazy"></a>' % (s, s, e(title)) for s in shots)
+			hl += '<li>%s<div class="htext"><div class="htitle">%s%s</div>%s%s%s</div></li>' % (
 				ico(uris, area, 28) if area else '', '<span class="harea">%s</span>' % e(area) if area else '', e(title),
-				'<p class="hdesc">%s</p>' % e(desc) if desc else '', '<div class="hlinks">%s</div>' % links if links else '')
+				'<p class="hdesc">%s</p>' % e(desc) if desc else '', '<div class="shots">%s</div>' % gallery if gallery else '',
+				'<div class="hlinks">%s</div>' % links if links else '')
 		hl += '</ul></article>'
 
 	data_json = json.dumps(data, ensure_ascii=False, separators=(',', ':')).replace('</', '<\\/')
 	return TEMPLATE.replace('%NOW%', now).replace('%TILES%', tiles).replace('%CHART%', week_chart(data)).replace('%AREAS%', area_html) \
 		.replace('%BOARD%', board).replace('%DATA%', data_json).replace('%FIRST%', first).replace('%PROGRESS%', prog).replace('%HIGHLIGHTS%', hl) \
-		.replace('%ICONS%', json.dumps({a: slug(a) for a in uris})).replace('%ICONCSS%', icon_css(uris)).replace('%SCORECARD%', score_html)
+		.replace('%ICONS%', json.dumps({a: slug(a) for a in uris})).replace('%ICONCSS%', icon_css(uris)).replace('%SCORECARD%', score_html) \
+		.replace('%COVERAGE%', pages.coverage(rows)).replace('%ADDITIONS%', pages.additions())
 
 
 TEMPLATE = r'''<title>Classic Interlude Devlog</title>
@@ -369,7 +397,7 @@ TEMPLATE = r'''<title>Classic Interlude Devlog</title>
 :root {
   --bg: #f3f4f1; --surface: #ffffff; --fg: #1d2421; --muted: #5d6763; --line: #d9ddd7;
   --gold: #a87a12; --server: #2b7a78; --client: #b8862b; --build: #6b6fa8;
-  --done: #2e7d4f; --part: #b8862b; --wait: #c2581f; --prog: #3d6fb4; --none: #8a918d;
+  --done: #2e7d4f; --part: #b8862b; --wait: #c2581f; --prog: #3d6fb4; --none: #8a918d; --line2: #b9bfba;
   --display: "Space Grotesk", "Segoe UI", system-ui, sans-serif;
   --body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
   --mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
@@ -377,11 +405,11 @@ TEMPLATE = r'''<title>Classic Interlude Devlog</title>
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
   --bg: #141917; --surface: #1c2320; --fg: #e4e8e5; --muted: #9aa49f; --line: #2d3632;
   --gold: #d9ad4a; --server: #4fb3ae; --client: #d9a84a; --build: #9599d6;
-  --done: #5cc189; --part: #d9a84a; --wait: #ec8a52; --prog: #77a6e6; --none: #7c8580; color-scheme: dark } }
+  --done: #5cc189; --part: #d9a84a; --wait: #ec8a52; --prog: #77a6e6; --none: #7c8580; --line2: #4a544f; color-scheme: dark } }
 :root[data-theme="dark"] {
   --bg: #141917; --surface: #1c2320; --fg: #e4e8e5; --muted: #9aa49f; --line: #2d3632;
   --gold: #d9ad4a; --server: #4fb3ae; --client: #d9a84a; --build: #9599d6;
-  --done: #5cc189; --part: #d9a84a; --wait: #ec8a52; --prog: #77a6e6; --none: #7c8580; color-scheme: dark }
+  --done: #5cc189; --part: #d9a84a; --wait: #ec8a52; --prog: #77a6e6; --none: #7c8580; --line2: #4a544f; color-scheme: dark }
 * { box-sizing: border-box }
 body { background: var(--bg); color: var(--fg); font: 15px/1.55 var(--body); margin: 0 }
 .wrap { max-width: 1080px; margin: 0 auto; padding-block: 32px 64px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; gap: 40px }
@@ -491,6 +519,36 @@ table.score { border-collapse: collapse; width: 100%; font-size: 14px; min-width
 .pill { display: inline-block; font-size: 12px; font-weight: 600; padding: 2px 9px; border-radius: 999px; white-space: nowrap; color: var(--bg) }
 .s-tested { background: var(--done) } .s-mostly { background: var(--prog) } .s-partly { background: var(--part) }
 .s-untested { background: var(--wait) } .s-unchecked { background: var(--none) }
+.shots { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px }
+.shot { display: block; border: 1px solid var(--line); border-radius: 4px; overflow: hidden; max-width: 100% }
+.shot img { display: block; height: 160px; width: auto; max-width: 100%; object-fit: cover }
+.shot:hover, .shot:focus-visible { border-color: var(--gold); outline: none }
+.charts { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px }
+.charts figure { margin: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 14px 16px }
+.charts figcaption { font: 600 14px var(--display); margin-bottom: 8px }
+.chartbox { display: grid; gap: 10px }
+.donut { width: 100%; max-width: 200px; margin: 0 auto; display: block }
+.dnum { font: 700 30px var(--display); fill: var(--fg) }
+.dsub { font: 11px var(--mono); fill: var(--muted) }
+.dlegend { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; font-size: 13px }
+.dlegend li { display: grid; grid-template-columns: 14px 1fr auto; gap: 8px; align-items: center }
+.lval { font: 12px var(--mono); font-variant-numeric: tabular-nums; color: var(--muted) }
+.groups { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px }
+ul.plain { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; font-size: 13px }
+ul.plain code, .score code { font: 12px var(--mono) }
+ul.cols { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); column-gap: 16px; padding: 12px 0 }
+ul.cards { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)) }
+ul.cards li { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px }
+.why { color: var(--muted); font-size: 12px }
+p.why { margin: 4px 0 8px }
+.note2 { color: var(--muted); font-size: 13px }
+.caveats { margin: 0; padding-left: 20px; display: grid; gap: 6px; max-width: 80ch; color: var(--muted) }
+.acc { display: grid; gap: 8px }
+.acard { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 0 14px }
+.acard > summary { grid-template-columns: 1fr auto; padding: 12px 0 }
+.atitle { font: 600 15px var(--display) }
+.acard .tablewrap { border: 0; margin-bottom: 12px }
+.val { font: 12px var(--mono); color: var(--gold); white-space: nowrap }
 .harea { font: 500 11px var(--mono); text-transform: uppercase; letter-spacing: .06em; color: var(--gold); margin-right: 8px }
 </style>
 
@@ -522,6 +580,8 @@ table.score { border-collapse: collapse; width: 100%; font-size: 14px; min-width
     <button class="tab" role="tab" id="tab-highlights" data-view="highlights" aria-controls="highlights">Highlights</button>
     <button class="tab" role="tab" id="tab-status" data-view="status" aria-controls="status">Feature status</button>
     <button class="tab" role="tab" id="tab-log" data-view="log" aria-controls="log-view">Change log</button>
+    <button class="tab" role="tab" id="tab-coverage" data-view="coverage" aria-controls="coverage">Coverage</button>
+    <button class="tab" role="tab" id="tab-classic" data-view="classic" aria-controls="classic">Classic features</button>
   </nav>
 
   <section class="view" id="highlights" role="tabpanel" aria-labelledby="tab-highlights">
@@ -536,6 +596,14 @@ table.score { border-collapse: collapse; width: 100%; font-size: 14px; min-width
     <h2 class="gap">Feature ledger</h2>
     <p class="lede">The project's own feature list, grouped by state.</p>
     <div class="board">%BOARD%</div>
+  </section>
+
+  <section class="view" id="coverage" role="tabpanel" aria-labelledby="tab-coverage" hidden>
+    %COVERAGE%
+  </section>
+
+  <section class="view" id="classic" role="tabpanel" aria-labelledby="tab-classic" hidden>
+    %ADDITIONS%
   </section>
 
   <section class="view" id="log-view" role="tabpanel" aria-labelledby="tab-log" hidden>
@@ -598,7 +666,7 @@ render();
 
 // Tabs: one view at a time, kept in the address (#highlights, #status, #log). Two more addresses open the log:
 // #area-<area> lists one area's changes (Work by area), #c-<commit> opens one change (a highlight's link).
-const VIEWS = { highlights: 'highlights', status: 'status', log: 'log-view' };
+const VIEWS = { highlights: 'highlights', status: 'status', log: 'log-view', coverage: 'coverage', classic: 'classic' };
 const AREA_BY_SLUG = Object.fromEntries(Object.entries(ICONS).map(([a, s]) => [s, a]));
 function openTab(v) {
   for (const [name, id] of Object.entries(VIEWS)) {
