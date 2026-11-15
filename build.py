@@ -548,7 +548,19 @@ p.why { margin: 4px 0 8px }
 .acard > summary { grid-template-columns: 1fr auto; padding: 12px 0 }
 .atitle { font: 600 15px var(--display) }
 .acard .tablewrap { border: 0; margin-bottom: 12px }
-.val { font: 12px var(--mono); color: var(--gold); white-space: nowrap }
+.val { font: 12px var(--mono); color: var(--gold); overflow-wrap: anywhere; max-height: 9em; overflow-y: auto }
+table.fixed { table-layout: fixed; min-width: 0 }
+table.fixed td { overflow-wrap: anywhere }
+.settings col.k { width: 24% } .settings col.v { width: 26% } .settings col.d { width: 50% }
+.cmds col.c1 { width: 20% } .cmds col.c2 { width: 26% } .cmds col.c3 { width: 54% }
+.col ul.plain li { display: block }
+.col ul.plain li .why { margin-left: 6px }
+@media (max-width: 640px) {
+  table.fixed, table.fixed tbody, table.fixed tr, table.fixed td { display: block; width: auto }
+  table.fixed colgroup, table.fixed thead { display: none }
+  table.fixed tr { border-bottom: 1px solid var(--line); padding: 6px 0 }
+  table.fixed td { border: 0; padding: 2px 14px }
+}
 .harea { font: 500 11px var(--mono); text-transform: uppercase; letter-spacing: .06em; color: var(--gold); margin-right: 8px }
 </style>
 

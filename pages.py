@@ -105,9 +105,9 @@ def additions():
 		out += '<details class="acard"%s><summary><span class="atitle">%s</span><span class="cnt">%d</span></summary>' % (' open' if k == 0 else '', e(title), len(items))
 		if intro:
 			out += '<p class="why">%s</p>' % e(intro)
-		out += '<div class="tablewrap"><table class="score"><tbody>'
+		out += '<div class="tablewrap"><table class="score fixed settings"><colgroup><col class="k"><col class="v"><col class="d"></colgroup><tbody>'
 		for key, value, desc in items:
-			out += '<tr><td><code>%s</code></td><td class="val">%s</td><td class="note">%s</td></tr>' % (e(key), e(value) or '&nbsp;', e(desc))
+			out += '<tr><td><code>%s</code></td><td><div class="val">%s</div></td><td class="note">%s</td></tr>' % (e(key), e(value) or '&nbsp;', e(desc))
 		out += '</tbody></table></div></details>'
 	out += '</div>'
 
@@ -119,14 +119,14 @@ def additions():
 				out += '<details class="acard"><summary><span class="atitle">%s</span><span class="cnt">%s · %d</span></summary>' % (e(title), e(f), len(items))
 				if intro:
 					out += '<p class="why">%s</p>' % e(intro)
-				out += '<div class="tablewrap"><table class="score"><tbody>'
+				out += '<div class="tablewrap"><table class="score fixed settings"><colgroup><col class="k"><col class="v"><col class="d"></colgroup><tbody>'
 				for key, value, desc in items:
-					out += '<tr><td><code>%s</code></td><td class="val">%s</td><td class="note">%s</td></tr>' % (e(key), e(value) or '&nbsp;', e(desc))
+					out += '<tr><td><code>%s</code></td><td><div class="val">%s</div></td><td class="note">%s</td></tr>' % (e(key), e(value) or '&nbsp;', e(desc))
 				out += '</tbody></table></div></details>'
 		out += '</div>'
 
 	cmds = extras.gm_commands()
-	out += '<h2 class="gap">GM commands added <span class="cnt">%d</span></h2><div class="tablewrap"><table class="score"><thead><tr><th>Command</th><th>Parameters</th><th>What it does</th></tr></thead><tbody>' % len(cmds)
+	out += '<h2 class="gap">GM commands added <span class="cnt">%d</span></h2><div class="tablewrap"><table class="score fixed cmds"><colgroup><col class="c1"><col class="c2"><col class="c3"></colgroup><thead><tr><th>Command</th><th>Parameters</th><th>What it does</th></tr></thead><tbody>' % len(cmds)
 	for name, params, desc in cmds:
 		out += '<tr><td><code>%s</code></td><td class="note">%s</td><td>%s</td></tr>' % (e(name), e(params), e(desc))
 	out += '</tbody></table></div>'
