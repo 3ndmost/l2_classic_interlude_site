@@ -47,6 +47,38 @@ AREAS = [
 ]
 AREAS = [(name, re.compile(rx, re.I)) for name, rx in AREAS]
 
+# One game icon per area (icons/, 32 x 32 item icons of the client), embedded in the page.
+ICONS = {
+	'Olympiad': 'weapon_he_two_handed_sword_of_hero_i00', 'Pets & summons': 'etc_summon_wolf_r_01', 'Events': 'etc_heart_i00',
+	'Login & servers': 'etc_key_i00', 'GM tools': 'etc_bugle_i00', 'Camera & movement': 'armor_boots_i00',
+	'Combat & skills': 'time_weapon_crimson_sword_i00', 'Items & inventory': 'etc_handbag_i00', 'Quests & tutorial': 'bookmark_scroll_i00',
+	'Clan & siege': 'weapon_fort_flag_i00', 'Chat, mail & friends': 'etc_letter_envelope_i00', 'Maps & zones': 'etc_map_ivory_i00',
+	'Client UI': 'etc_spellbook_gray_i00', 'Other': 'etc_broken_crystal_silver_i00',
+}
+
+
+def icon_uris():
+	import base64
+	out = {}
+	for area, name in ICONS.items():
+		path = os.path.join(HERE, 'icons', name + '.png')
+		if os.path.exists(path):
+			out[area] = 'data:image/png;base64,' + base64.b64encode(open(path, 'rb').read()).decode('ascii')
+	return out
+
+
+def slug(area):
+	return re.sub(r'[^a-z]+', '-', area.lower()).strip('-')
+
+
+def icon_css(uris):
+	"""Each icon once, as a class: .i-<area> (the page shows an area's icon many times)."""
+	return ''.join('.i-%s { background-image: url(%s) }\n' % (slug(a), u) for a, u in uris.items())
+
+
+def ico(uris, area, size=20):
+	return '<span class="ico i-%s" style="width:%dpx;height:%dpx" aria-hidden="true"></span>' % (slug(area), size, size) if area in uris else ''
+
 
 def clean(text):
 	text = '\n'.join(line for line in text.splitlines() if not line.lower().startswith('co-authored-by'))
@@ -150,6 +182,67 @@ def week_chart(data):
 	return ''.join(parts)
 
 
+# Overall progress: what each feature state counts for (out of scope does not count).
+WEIGHTS = {'Done': 1.0, 'Waiting for test': 0.8, 'Partly done': 0.6, 'In progress': 0.4, 'Not started': 0.0}
+
+HIGHLIGHTS_FILE = os.path.join(HERE, 'highlights.md')
+PER_DAY = 5
+# Commits that are housekeeping, not progress: never a highlight.
+MINOR = re.compile(r'^(document|docs?\b|record|note|update (the )?(docs|readme|ledger|manual)|merge|revert|restore|correct the .*(comment|note)|add(ed)? \.git|update \.git|remove (the )?(temporary )?debug|leave .* room|tidy|rename)', re.I)
+
+
+def progress(feats):
+	counted = [f for f in feats if f['g'] in WEIGHTS]
+	return round(100 * sum(WEIGHTS[f['g']] for f in counted) / len(counted)) if counted else 0
+
+
+def manual_highlights():
+	"""highlights.md: '## yyyy-mm-dd' then '- text' lines; a day written there replaces the automatic picks."""
+	out, day = {}, None
+	if os.path.exists(HIGHLIGHTS_FILE):
+		for line in open(HIGHLIGHTS_FILE, encoding='utf-8'):
+			m = re.match(r'##\s*(\d{4}-\d{2}-\d{2})', line)
+			if m:
+				day = m.group(1)
+				out[day] = []
+			elif day and line.strip().startswith('- '):
+				out[day].append(clean(line.strip()[2:]))
+	return out
+
+
+def score(c):
+	if MINOR.search(c['s']) or c['r'] == 'build':
+		return -1
+	size = c['p'] + c['m'] + 40 * c['f']
+	s = len(str(size)) + (2 if c['a'] != 'Other' else 0) + (1 if len(c['b']) > 400 else 0)
+	if re.match(r'(add|show|let|make|give|start|keep|stop|fix)\b', c['s'], re.I):
+		s += 2
+	return s
+
+
+def highlights(data):
+	"""Per day, newest first: (day, [(area, text)], number of other changes, hand-written or not)."""
+	manual = manual_highlights()
+	days = {}
+	for c in data:
+		days.setdefault(c['d'][:10], []).append(c)
+	out = []
+	for day in sorted(days, reverse=True):
+		commits = days[day]
+		if day in manual:
+			# "- [Area] text" gives a hand-written line its area (and icon).
+			items = []
+			for t in manual[day]:
+				m = re.match(r'\[([^\]]+)\]\s*(.*)', t)
+				items.append((m.group(1), m.group(2)) if m else ('', t))
+			out.append((day, items, len(commits), True))
+			continue
+		ranked = sorted((c for c in commits if score(c) >= 0), key=score, reverse=True)[:PER_DAY]
+		if ranked:
+			out.append((day, [(c['a'], c['s']) for c in ranked], len(commits), False))
+	return out
+
+
 def page(data, feats):
 	now = datetime.datetime.now().strftime('%Y-%m-%d %H:%M')
 	by_repo = {k: sum(1 for c in data if c['r'] == k) for k, _, _ in REPOS}
@@ -168,7 +261,8 @@ def page(data, feats):
 	tiles = ''.join('<div class="tile"><div class="num">%s</div><div class="lbl">%s</div></div>' % (e(str(v)), e(l)) for v, l in [
 		(len(data), 'commits'), (by_repo['server'], 'server commits'), (by_repo['client'], 'client commits'),
 		(counts['Done'], 'features done'), (days, 'days since the first commit'), ('{:,}'.format(lines), 'lines changed')])
-	area_html = ''.join('<div class="arow"><span class="aname">%s</span><span class="abar"><span style="width:%.1f%%"></span></span><span class="acount">%d</span></div>' % (e(n), 100.0 * v / amax, v) for n, v in area_rows)
+	uris = icon_uris()
+	area_html = ''.join('<div class="arow"><span class="aname">%s%s</span><span class="abar"><span style="width:%.1f%%"></span></span><span class="acount">%d</span></div>' % (ico(uris, n), e(n), 100.0 * v / amax, v) for n, v in area_rows)
 	board = ''
 	for g in groups:
 		items = [f for f in feats if f['g'] == g]
@@ -179,9 +273,24 @@ def page(data, feats):
 			board += '<li><span class="fid">%s</span><span class="fname">%s</span><span class="fstate">%s</span></li>' % (e(f['id']), e(f['n']), e(f['c'][:140]))
 		board += '</ul></section>'
 
+	pct = progress(feats)
+	prog = ('<div class="progress"><div class="ptop"><span class="pnum">~%d%%</span><span class="plbl">overall progress (approximate)</span></div>'
+		'<div class="pbar" role="progressbar" aria-valuenow="%d" aria-valuemin="0" aria-valuemax="100"><span style="width:%d%%"></span></div>'
+		'<p class="pnote">Counted from the %d features in scope: done 100%%, waiting for test 80%%, partly done 60%%, in progress 40%%, not started 0%%. '
+		'The features differ a lot in size, so this is a rough guide, not a measurement.</p></div>') % (pct, pct, pct, sum(1 for f in feats if f['g'] in WEIGHTS))
+
+	hl = ''
+	for day, items, total, manual in highlights(data):
+		label = datetime.date.fromisoformat(day).strftime('%A %d %B %Y')
+		hl += '<article class="hday"><h3>%s <span class="cnt">%d change%s%s</span></h3><ul>' % (e(label), total, '' if total == 1 else 's', '' if manual else ' · picked automatically')
+		for area, text in items:
+			hl += '<li>%s<span>%s%s</span></li>' % (ico(uris, area, 24) if area else '', '<span class="harea">%s</span>' % e(area) if area else '', e(text))
+		hl += '</ul></article>'
+
 	data_json = json.dumps(data, ensure_ascii=False, separators=(',', ':')).replace('</', '<\\/')
 	return TEMPLATE.replace('%NOW%', now).replace('%TILES%', tiles).replace('%CHART%', week_chart(data)).replace('%AREAS%', area_html) \
-		.replace('%BOARD%', board).replace('%DATA%', data_json).replace('%FIRST%', first)
+		.replace('%BOARD%', board).replace('%DATA%', data_json).replace('%FIRST%', first).replace('%PROGRESS%', prog).replace('%HIGHLIGHTS%', hl) \
+		.replace('%ICONS%', json.dumps({a: slug(a) for a in uris})).replace('%ICONCSS%', icon_css(uris))
 
 
 TEMPLATE = r'''<title>Classic Interlude Devlog</title>
@@ -270,6 +379,29 @@ summary::-webkit-details-marker { display: none }
   .arow { grid-template-columns: 110px 1fr 34px }
 }
 #more { margin-top: 16px }
+.progress { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 18px 20px; display: grid; gap: 10px }
+.ptop { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap }
+.pnum { font: 700 40px var(--display); font-variant-numeric: tabular-nums; color: var(--gold) }
+.plbl { font: 600 15px var(--display) }
+.pbar { height: 12px; background: var(--line); border-radius: 6px; overflow: hidden }
+.pbar span { display: block; height: 100%; background: var(--done) }
+.pnote { margin: 0; font-size: 13px; color: var(--muted); max-width: 80ch }
+.tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--line); flex-wrap: wrap; margin-bottom: -24px }
+.tab { font: 600 15px var(--display); background: none; border: 0; border-bottom: 3px solid transparent; color: var(--muted); padding: 10px 16px; cursor: pointer }
+.tab[aria-selected="true"] { color: var(--fg); border-bottom-color: var(--gold) }
+.tab:focus-visible { outline: 2px solid var(--gold); outline-offset: -2px }
+.hlist { display: grid; gap: 14px; max-width: 860px }
+.hday { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 14px 18px }
+.hday h3 { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 8px }
+.hday ul { margin: 0; padding-left: 18px; display: grid; gap: 5px }
+.ico { display: inline-block; vertical-align: middle; margin-right: 8px; border-radius: 3px; flex: none; background-size: cover }
+%ICONCSS%
+.aname { display: flex; align-items: center; min-width: 0 }
+.area .ico { margin-right: 6px }
+.hday li { display: flex; align-items: flex-start; gap: 2px; list-style: none }
+.hday li .ico { margin-top: -1px }
+.hday ul { padding-left: 0 }
+.harea { font: 500 11px var(--mono); text-transform: uppercase; letter-spacing: .06em; color: var(--gold); margin-right: 8px }
 </style>
 
 <div class="wrap">
@@ -279,6 +411,8 @@ summary::-webkit-details-marker { display: none }
     <p class="lede">The Classic Zaken client (protocol 110) running on an aCis Interlude server: the client gets the packets and windows it expects, while the gameplay stays Interlude. This page lists every change to the server, the client and the runtime, with the state of each feature.</p>
     <div class="meta">Updated %NOW% · history since %FIRST%</div>
   </header>
+
+  %PROGRESS%
 
   <section class="tiles" aria-label="Totals">%TILES%</section>
 
@@ -294,13 +428,22 @@ summary::-webkit-details-marker { display: none }
     </div>
   </section>
 
-  <section>
-    <h2>Feature status</h2>
+  <nav class="tabs" role="tablist" aria-label="Views">
+    <button class="tab" role="tab" id="tab-highlights" data-view="highlights" aria-controls="highlights">Highlights</button>
+    <button class="tab" role="tab" id="tab-status" data-view="status" aria-controls="status">Feature status</button>
+    <button class="tab" role="tab" id="tab-log" data-view="log" aria-controls="log-view">Change log</button>
+  </nav>
+
+  <section class="view" id="highlights" role="tabpanel" aria-labelledby="tab-highlights">
+    <p class="lede">The main progress of each day, in a few lines. The full list is in the Change log.</p>
+    <div class="hlist">%HIGHLIGHTS%</div>
+  </section>
+
+  <section class="view" id="status" role="tabpanel" aria-labelledby="tab-status" hidden>
     <div class="board">%BOARD%</div>
   </section>
 
-  <section>
-    <h2>Change log</h2>
+  <section class="view" id="log-view" role="tabpanel" aria-labelledby="tab-log" hidden>
     <div class="controls">
       <input id="q" type="search" placeholder="Search commits (title or explanation)" aria-label="Search commits">
       <select id="area" aria-label="Area"><option value="">All areas</option></select>
@@ -316,6 +459,8 @@ summary::-webkit-details-marker { display: none }
 
 <script>
 const DATA = %DATA%;
+const ICONS = %ICONS%;
+const icon = (a) => ICONS[a] ? '<span class="ico i-' + ICONS[a] + '" style="width:18px;height:18px" aria-hidden="true"></span>' : '';
 const PAGE = 150;
 const repos = { server: true, client: true, build: true };
 const names = { server: 'Server', client: 'Client', build: 'Runtime' };
@@ -337,7 +482,7 @@ function render() {
   for (const c of list.slice(0, shown)) {
     const d = c.d.slice(0, 10);
     if (d !== day) { day = d; out += '<div class="day">' + new Date(d + 'T12:00').toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) + '</div>'; }
-    out += '<details><summary><span class="repo ' + c.r + '">' + names[c.r] + '</span><span class="sha">' + c.h + '</span><span class="subj">' + esc(c.s) + '</span><span class="area">' + esc(c.a) + '</span></summary>'
+    out += '<details><summary><span class="repo ' + c.r + '">' + names[c.r] + '</span><span class="sha">' + c.h + '</span><span class="subj">' + esc(c.s) + '</span><span class="area">' + icon(c.a) + esc(c.a) + '</span></summary>'
       + '<div class="stat">' + c.d.slice(11, 16) + ' · ' + c.f + ' files · +' + c.p + ' −' + c.m + '</div>'
       + (c.b ? '<div class="body">' + esc(c.b) + '</div>' : '') + '</details>';
   }
@@ -355,6 +500,19 @@ document.querySelectorAll('[data-repo]').forEach((b) => b.addEventListener('clic
 }));
 $('#more').addEventListener('click', () => { shown += PAGE; render(); });
 render();
+
+// Tabs: one view at a time, kept in the address (#highlights, #status, #log).
+const VIEWS = { highlights: 'highlights', status: 'status', log: 'log-view' };
+function showView() {
+  const v = VIEWS[location.hash.slice(1)] ? location.hash.slice(1) : 'highlights';
+  for (const [name, id] of Object.entries(VIEWS)) {
+    document.getElementById(id).hidden = name !== v;
+    document.getElementById('tab-' + name).setAttribute('aria-selected', name === v);
+  }
+}
+document.querySelectorAll('.tab').forEach((t) => t.addEventListener('click', () => { location.hash = t.dataset.view; }));
+window.addEventListener('hashchange', showView);
+showView();
 </script>
 '''
 
