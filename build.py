@@ -182,18 +182,47 @@ def week_chart(data):
 	return ''.join(parts)
 
 
-# Overall progress: what each feature state counts for (out of scope does not count).
-WEIGHTS = {'Done': 1.0, 'Waiting for test': 0.8, 'Partly done': 0.6, 'In progress': 0.4, 'Not started': 0.0}
+# Overall progress: the systems scorecard (progress.md), each state's value.
+SCORECARD = os.path.join(HERE, 'progress.md')
+STATES = {'tested': 1.0, 'mostly': 0.85, 'partly': 0.6, 'untested': 0.4, 'unchecked': 0.2}
+SERVER_PACKETS = os.path.join(ROOT, 'l2_classic_interlude_server', 'aCis_gameserver', 'java', 'net', 'sf', 'l2j', 'gameserver', 'network')
+
+
+def scorecard():
+	"""[(system, size, state, note)] from progress.md's table."""
+	rows = []
+	if os.path.exists(SCORECARD):
+		for line in open(SCORECARD, encoding='utf-8'):
+			cells = [c.strip() for c in line.strip().strip('|').split('|')]
+			if len(cells) == 4 and cells[1].isdigit() and cells[2].lower() in STATES:
+				rows.append((clean(cells[0]), int(cells[1]), cells[2].lower(), clean(cells[3])))
+	return rows
+
+
+def scorecard_progress(rows):
+	total = sum(size for _, size, _, _ in rows)
+	return round(100 * sum(size * STATES[state] for _, size, state, _ in rows) / total) if total else 0
+
+
+def protocol_coverage():
+	"""(aCis server packets with a protocol 110 path, all aCis server packets): translated or allowed in GameClient, or
+	switching on the protocol themselves. Some of the rest are obsolete (version check, game guard)."""
+	folder = os.path.join(SERVER_PACKETS, 'serverpackets')
+	if not os.path.isdir(folder):
+		return 0, 0
+	client = open(os.path.join(SERVER_PACKETS, 'GameClient.java'), encoding='utf-8', errors='replace').read()
+	names = [f[:-5] for f in os.listdir(folder) if f.endswith('.java') and not f.startswith(('Classic', 'Abstract', 'L2GameServerPacket'))]
+	ok = 0
+	for n in names:
+		src = open(os.path.join(folder, n + '.java'), encoding='utf-8', errors='replace').read()
+		if re.search(r'\b' + n + r'\b', client) or 'CLASSIC_INTERLUDE' in src or 'ClientProtocol' in src:
+			ok += 1
+	return ok, len(names)
 
 HIGHLIGHTS_FILE = os.path.join(HERE, 'highlights.md')
 PER_DAY = 5
 # Commits that are housekeeping, not progress: never a highlight.
 MINOR = re.compile(r'^(document|docs?\b|record|note|update (the )?(docs|readme|ledger|manual)|merge|revert|restore|correct the .*(comment|note)|add(ed)? \.git|update \.git|remove (the )?(temporary )?debug|leave .* room|tidy|rename)', re.I)
-
-
-def progress(feats):
-	counted = [f for f in feats if f['g'] in WEIGHTS]
-	return round(100 * sum(WEIGHTS[f['g']] for f in counted) / len(counted)) if counted else 0
 
 
 def manual_highlights():
@@ -220,8 +249,18 @@ def score(c):
 	return s
 
 
+def summary(body, limit=240):
+	"""The first paragraph of a commit's explanation, cut at a sentence near the limit."""
+	para = re.split(r'\n\s*\n', body.strip(), 1)[0].replace('\n', ' ') if body.strip() else ''
+	if len(para) <= limit:
+		return para
+	cut = para[:limit]
+	stop = cut.rfind('. ')
+	return cut[:stop + 1] if stop > limit // 2 else cut.rsplit(' ', 1)[0] + '…'
+
+
 def highlights(data):
-	"""Per day, newest first: (day, [(area, text)], number of other changes, hand-written or not)."""
+	"""Per day, newest first: (day, [(area, title, description, [commit hashes])], changes that day, hand-written)."""
 	manual = manual_highlights()
 	days = {}
 	for c in data:
@@ -230,16 +269,25 @@ def highlights(data):
 	for day in sorted(days, reverse=True):
 		commits = days[day]
 		if day in manual:
-			# "- [Area] text" gives a hand-written line its area (and icon).
+			# "- [Area] Title | Description | hash hash" (area, description and commits optional).
 			items = []
 			for t in manual[day]:
 				m = re.match(r'\[([^\]]+)\]\s*(.*)', t)
-				items.append((m.group(1), m.group(2)) if m else ('', t))
+				area, rest = (m.group(1), m.group(2)) if m else ('', t)
+				parts = [p.strip() for p in rest.split('|')]
+				title = parts[0]
+				desc = parts[1] if len(parts) > 1 else ''
+				refs = []
+				for prefix in (parts[2].split() if len(parts) > 2 else []):
+					match = next((c['h'] for c in commits if c['h'].startswith(prefix[:7])), None)
+					if match:
+						refs.append(match)
+				items.append((area, title, desc, refs))
 			out.append((day, items, len(commits), True))
 			continue
 		ranked = sorted((c for c in commits if score(c) >= 0), key=score, reverse=True)[:PER_DAY]
 		if ranked:
-			out.append((day, [(c['a'], c['s']) for c in ranked], len(commits), False))
+			out.append((day, [(c['a'], c['s'], summary(c['b']), [c['h']]) for c in ranked], len(commits), False))
 	return out
 
 
@@ -262,7 +310,7 @@ def page(data, feats):
 		(len(data), 'commits'), (by_repo['server'], 'server commits'), (by_repo['client'], 'client commits'),
 		(counts['Done'], 'features done'), (days, 'days since the first commit'), ('{:,}'.format(lines), 'lines changed')])
 	uris = icon_uris()
-	area_html = ''.join('<div class="arow"><span class="aname">%s%s</span><span class="abar"><span style="width:%.1f%%"></span></span><span class="acount">%d</span></div>' % (ico(uris, n), e(n), 100.0 * v / amax, v) for n, v in area_rows)
+	area_html = ''.join('<a class="arow" href="#area-%s" title="Show the %d changes of %s"><span class="aname">%s%s</span><span class="abar"><span style="width:%.1f%%"></span></span><span class="acount">%d</span></a>' % (slug(n), v, e(n), ico(uris, n), e(n), 100.0 * v / amax, v) for n, v in area_rows)
 	board = ''
 	for g in groups:
 		items = [f for f in feats if f['g'] == g]
@@ -273,24 +321,43 @@ def page(data, feats):
 			board += '<li><span class="fid">%s</span><span class="fname">%s</span><span class="fstate">%s</span></li>' % (e(f['id']), e(f['n']), e(f['c'][:140]))
 		board += '</ul></section>'
 
-	pct = progress(feats)
+	rows = scorecard()
+	pct = scorecard_progress(rows)
+	ok, all_packets = protocol_coverage()
+	cover = round(100 * ok / all_packets) if all_packets else 0
+	by_state = {s: sum(1 for r in rows if r[2] == s) for s in STATES}
 	prog = ('<div class="progress"><div class="ptop"><span class="pnum">~%d%%</span><span class="plbl">overall progress (approximate)</span></div>'
 		'<div class="pbar" role="progressbar" aria-valuenow="%d" aria-valuemin="0" aria-valuemax="100"><span style="width:%d%%"></span></div>'
-		'<p class="pnote">Counted from the %d features in scope: done 100%%, waiting for test 80%%, partly done 60%%, in progress 40%%, not started 0%%. '
-		'The features differ a lot in size, so this is a rough guide, not a measurement.</p></div>') % (pct, pct, pct, sum(1 for f in feats if f['g'] in WEIGHTS))
+		'<p class="pnote">Weighted over %d Interlude systems by size and by how far each has been tested on the Classic client '
+		'(%d tested, %d mostly, %d partly, %d with code but untested, %d not checked). See the scorecard in Feature status. '
+		'On the code side, %d of %d aCis server packets (%d%%) have a Classic path; many of the rest are replaced by Classic login packets, obsolete (version and anti-cheat checks) or GM-only views.</p></div>') % (
+		pct, pct, pct, len(rows), by_state['tested'], by_state['mostly'], by_state['partly'], by_state['untested'], by_state['unchecked'], ok, all_packets, cover)
+
+	state_label = {'tested': 'Tested', 'mostly': 'Mostly tested', 'partly': 'Partly tested', 'untested': 'Code ready, untested', 'unchecked': 'Not checked'}
+	score_html = '<div class="tablewrap"><table class="score"><thead><tr><th>System</th><th>Size</th><th>State</th><th>Note</th></tr></thead><tbody>'
+	for system, size, state, note in rows:
+		score_html += '<tr><td>%s</td><td class="num2">%s</td><td><span class="pill s-%s">%s</span></td><td class="note">%s</td></tr>' % (e(system), '●' * size, state, state_label[state], e(note))
+	score_html += '</tbody></table></div>'
 
 	hl = ''
 	for day, items, total, manual in highlights(data):
 		label = datetime.date.fromisoformat(day).strftime('%A %d %B %Y')
 		hl += '<article class="hday"><h3>%s <span class="cnt">%d change%s%s</span></h3><ul>' % (e(label), total, '' if total == 1 else 's', '' if manual else ' · picked automatically')
-		for area, text in items:
-			hl += '<li>%s<span>%s%s</span></li>' % (ico(uris, area, 24) if area else '', '<span class="harea">%s</span>' % e(area) if area else '', e(text))
+		for area, title, desc, refs in items:
+			links = ''
+			if refs:
+				links = '<a class="more" href="#c-%s">More in the change log</a>' % refs[0]
+				if len(refs) > 1:
+					links += '<span class="also">also ' + ' '.join('<a href="#c-%s">%s</a>' % (h, h[:7]) for h in refs[1:]) + '</span>'
+			hl += '<li>%s<div class="htext"><div class="htitle">%s%s</div>%s%s</div></li>' % (
+				ico(uris, area, 28) if area else '', '<span class="harea">%s</span>' % e(area) if area else '', e(title),
+				'<p class="hdesc">%s</p>' % e(desc) if desc else '', '<div class="hlinks">%s</div>' % links if links else '')
 		hl += '</ul></article>'
 
 	data_json = json.dumps(data, ensure_ascii=False, separators=(',', ':')).replace('</', '<\\/')
 	return TEMPLATE.replace('%NOW%', now).replace('%TILES%', tiles).replace('%CHART%', week_chart(data)).replace('%AREAS%', area_html) \
 		.replace('%BOARD%', board).replace('%DATA%', data_json).replace('%FIRST%', first).replace('%PROGRESS%', prog).replace('%HIGHLIGHTS%', hl) \
-		.replace('%ICONS%', json.dumps({a: slug(a) for a in uris})).replace('%ICONCSS%', icon_css(uris))
+		.replace('%ICONS%', json.dumps({a: slug(a) for a in uris})).replace('%ICONCSS%', icon_css(uris)).replace('%SCORECARD%', score_html)
 
 
 TEMPLATE = r'''<title>Classic Interlude Devlog</title>
@@ -401,6 +468,29 @@ summary::-webkit-details-marker { display: none }
 .hday li { display: flex; align-items: flex-start; gap: 2px; list-style: none }
 .hday li .ico { margin-top: -1px }
 .hday ul { padding-left: 0 }
+a.arow { color: inherit; text-decoration: none; border-radius: 4px; padding-inline: 4px; margin-inline: -4px }
+a.arow:hover, a.arow:focus-visible { background: var(--surface); outline: none }
+a.arow:hover .aname, a.arow:focus-visible .aname { text-decoration: underline }
+.htext { min-width: 0 }
+.htitle { font: 600 15px var(--display) }
+.hdesc { margin: 2px 0 0; color: var(--muted); font-size: 14px }
+.hlinks { font-size: 13px; margin-top: 4px; display: flex; gap: 12px; flex-wrap: wrap }
+.hlinks a { color: var(--server) }
+.also { color: var(--muted) }
+.also a { font-family: var(--mono); font-size: 12px; margin-left: 4px }
+.hday li { gap: 10px !important; padding: 6px 0 }
+details.flash > summary { background: color-mix(in srgb, var(--gold) 18%, transparent); border-radius: 4px }
+h2.gap { margin-top: 36px }
+.tablewrap { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 6px }
+table.score { border-collapse: collapse; width: 100%; font-size: 14px; min-width: 640px }
+.score th { text-align: left; font: 600 12px var(--mono); text-transform: uppercase; letter-spacing: .06em; color: var(--muted); padding: 10px 14px; border-bottom: 1px solid var(--line) }
+.score td { padding: 8px 14px; border-bottom: 1px solid var(--line); vertical-align: top }
+.score tr:last-child td { border-bottom: 0 }
+.num2 { color: var(--gold); letter-spacing: 2px; white-space: nowrap }
+.note { color: var(--muted); font-size: 13px }
+.pill { display: inline-block; font-size: 12px; font-weight: 600; padding: 2px 9px; border-radius: 999px; white-space: nowrap; color: var(--bg) }
+.s-tested { background: var(--done) } .s-mostly { background: var(--prog) } .s-partly { background: var(--part) }
+.s-untested { background: var(--wait) } .s-unchecked { background: var(--none) }
 .harea { font: 500 11px var(--mono); text-transform: uppercase; letter-spacing: .06em; color: var(--gold); margin-right: 8px }
 </style>
 
@@ -440,6 +530,11 @@ summary::-webkit-details-marker { display: none }
   </section>
 
   <section class="view" id="status" role="tabpanel" aria-labelledby="tab-status" hidden>
+    <h2>Systems scorecard</h2>
+    <p class="lede">The overall progress comes from this table: every Interlude system, its size (● to ●●●) and how far it has been tested through the Classic client. Tested counts 100%, mostly tested 85%, partly tested 60%, code ready but untested 40%, not checked 20%.</p>
+    %SCORECARD%
+    <h2 class="gap">Feature ledger</h2>
+    <p class="lede">The project's own feature list, grouped by state.</p>
     <div class="board">%BOARD%</div>
   </section>
 
@@ -482,7 +577,7 @@ function render() {
   for (const c of list.slice(0, shown)) {
     const d = c.d.slice(0, 10);
     if (d !== day) { day = d; out += '<div class="day">' + new Date(d + 'T12:00').toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) + '</div>'; }
-    out += '<details><summary><span class="repo ' + c.r + '">' + names[c.r] + '</span><span class="sha">' + c.h + '</span><span class="subj">' + esc(c.s) + '</span><span class="area">' + icon(c.a) + esc(c.a) + '</span></summary>'
+    out += '<details id="c-' + c.h + '"><summary><span class="repo ' + c.r + '">' + names[c.r] + '</span><span class="sha">' + c.h + '</span><span class="subj">' + esc(c.s) + '</span><span class="area">' + icon(c.a) + esc(c.a) + '</span></summary>'
       + '<div class="stat">' + c.d.slice(11, 16) + ' · ' + c.f + ' files · +' + c.p + ' −' + c.m + '</div>'
       + (c.b ? '<div class="body">' + esc(c.b) + '</div>' : '') + '</details>';
   }
@@ -501,14 +596,46 @@ document.querySelectorAll('[data-repo]').forEach((b) => b.addEventListener('clic
 $('#more').addEventListener('click', () => { shown += PAGE; render(); });
 render();
 
-// Tabs: one view at a time, kept in the address (#highlights, #status, #log).
+// Tabs: one view at a time, kept in the address (#highlights, #status, #log). Two more addresses open the log:
+// #area-<area> lists one area's changes (Work by area), #c-<commit> opens one change (a highlight's link).
 const VIEWS = { highlights: 'highlights', status: 'status', log: 'log-view' };
-function showView() {
-  const v = VIEWS[location.hash.slice(1)] ? location.hash.slice(1) : 'highlights';
+const AREA_BY_SLUG = Object.fromEntries(Object.entries(ICONS).map(([a, s]) => [s, a]));
+function openTab(v) {
   for (const [name, id] of Object.entries(VIEWS)) {
     document.getElementById(id).hidden = name !== v;
     document.getElementById('tab-' + name).setAttribute('aria-selected', name === v);
   }
+}
+function resetFilters(area) {
+  $('#q').value = '';
+  areaSel.value = area || '';
+  for (const r of Object.keys(repos)) repos[r] = true;
+  document.querySelectorAll('[data-repo]').forEach((b) => b.setAttribute('aria-pressed', 'true'));
+  filter();
+}
+function showView() {
+  const h = location.hash.slice(1);
+  if (h.startsWith('area-')) {
+    openTab('log');
+    resetFilters(AREA_BY_SLUG[h.slice(5)] || '');
+    document.getElementById('log-view').scrollIntoView({ block: 'start' });
+    return;
+  }
+  if (h.startsWith('c-')) {
+    openTab('log');
+    resetFilters('');
+    const at = list.findIndex((c) => c.h === h.slice(2));
+    if (at >= 0) {
+      shown = Math.max(shown, at + 1);
+      render();
+      const el = document.getElementById(h);
+      el.open = true;
+      el.classList.add('flash');
+      el.scrollIntoView({ block: 'center' });
+    }
+    return;
+  }
+  openTab(VIEWS[h] ? h : 'highlights');
 }
 document.querySelectorAll('.tab').forEach((t) => t.addEventListener('click', () => { location.hash = t.dataset.view; }));
 window.addEventListener('hashchange', showView);
