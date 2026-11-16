@@ -20,7 +20,9 @@ OTHER_WAY = {
 	'ShowPCCafeCouponShowUI': 'sent as ClassicShowCouponUI (the coupon window)',
 	'ExGetBossRecord': 'raid points show in the status window (ClassicUserInfo); the per-boss record list has no Classic window',
 }
-GROUPS = ['Connected', 'Classic replacement', 'Handled another way', 'Never sent by aCis', 'GM viewer', 'Obsolete', 'Not connected']
+GROUPS = ['Connected', 'Classic replacement', 'Handled another way', 'No Classic counterpart', 'Never sent by aCis', 'GM viewer', 'Obsolete', 'Not connected']
+# Packets the Classic client cannot use at all (checked 2026-11-16).
+NO_COUNTERPART = {'ExPlayScene': "quest 127's movie: the client's ExPlayScene handler reads one number and does nothing, and its movie list has no Kamael movie; the quest goes on without it"}
 
 
 EMAIL = re.compile(r'[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}')
@@ -56,6 +58,8 @@ def packets():
 			group = 'Classic replacement'
 		elif name in OTHER_WAY:
 			group = 'Handled another way'
+		elif name in NO_COUNTERPART:
+			group = 'No Classic counterpart'
 		elif not any(word.search(s) for p, s in sources.items() if not p.endswith(os.sep + f)):
 			group = 'Never sent by aCis'
 		elif name.startswith(('GMView', 'GMHenna', 'Snoop')):

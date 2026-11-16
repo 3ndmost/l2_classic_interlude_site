@@ -4,12 +4,13 @@ import math
 import os
 import re
 
+import audit
 import extras
 
 e = html.escape
 
 PACKET_COLORS = {'Connected': 'done', 'Classic replacement': 'prog', 'Handled another way': 'build', 'Never sent by aCis': 'none',
-	'GM viewer': 'part', 'Obsolete': 'line2', 'Not connected': 'wait'}
+	'GM viewer': 'part', 'Obsolete': 'line2', 'Not connected': 'wait', 'No Classic counterpart': 'line2'}
 PACKET_NOTES = {
 	'Connected': 'translated to a Classic packet, allowed through, or switching its layout on the protocol',
 	'Classic replacement': 'a Classic* class of the same name is sent instead',
@@ -18,6 +19,7 @@ PACKET_NOTES = {
 	'GM viewer': "GM windows (Alt+G) with no Classic version yet",
 	'Obsolete': 'version and anti-cheat checks',
 	'Not connected': 'aCis sends it and the Classic client never gets it',
+	'No Classic counterpart': 'the Classic client has nothing that could show it',
 }
 GAP_NOTES = {
 	'ExPlayScene': 'the movie of quest 127 (Kamael: A Window to the Future); the client has it as FE:0x5D',
@@ -72,7 +74,7 @@ def coverage(rows):
 		names = p[g]
 		if not names:
 			continue
-		items = ''.join('<li><code>%s</code>%s</li>' % (e(n), (' <span class="why">%s</span>' % e(GAP_NOTES.get(n) or extras.OTHER_WAY.get(n, ''))) if (GAP_NOTES.get(n) or extras.OTHER_WAY.get(n)) else '') for n in names)
+		items = ''.join('<li><code>%s</code>%s</li>' % (e(n), (' <span class="why">%s</span>' % e(GAP_NOTES.get(n) or extras.OTHER_WAY.get(n) or extras.NO_COUNTERPART.get(n, ''))) if (GAP_NOTES.get(n) or extras.OTHER_WAY.get(n) or extras.NO_COUNTERPART.get(n)) else '') for n in names)
 		out += '<section class="col"><h3><span class="dot" style="background:var(--%s)"></span>%s <span class="cnt">%d</span></h3><p class="why">%s</p><ul class="plain">%s</ul></section>' % (PACKET_COLORS[g], e(g), len(names), e(PACKET_NOTES[g]), items)
 	out += '</div><p class="note2">%d packets are connected (%s) and not listed one by one.</p>' % (len(p['Connected']), e(PACKET_NOTES['Connected']))
 
@@ -87,10 +89,54 @@ def coverage(rows):
 
 	out += ('<h2 class="gap">What these numbers cannot tell</h2><ul class="caveats">'
 		'<li>Tests are recorded per game system, not per packet, so there is no count of tested packets.</li>'
-		'<li>The client\'s own requests were not counted: the client\'s request table did not line up with the server\'s routing code, so that figure was left out rather than guessed.</li>'
+		'<li>The client\'s request table (read from its send code) has a few wrong sub-opcodes, so a request also counts as routed when the server creates it by name; every unrouted request was then judged by hand.</li>'
 		'<li>%d quests run on the server; the quest journal, markers and a handful of quests were played through on this client, most quests were not.</li>'
 		'<li>Gameplay rules are aCis\'s (the Interlude reference) and are not scored: this page measures whether each system works through the Classic client.</li></ul>') % extras.quests()
+	out += packet_tables()
 	return out
+
+
+CHECK_LABEL = {'ok': 'Reaches its handler', 'not sent': 'Not sent on 110'}
+CLIENT_LABEL = {'routed': 'Routed', 'modern': 'Later Classic system', 'not needed': 'Not needed', 'later chronicle': 'Later chronicle',
+	'minor': 'Minor, open', 'open': 'Open', 'check': 'To check'}
+CLIENT_COLOR = {'routed': 'done', 'modern': 'none', 'not needed': 'prog', 'later chronicle': 'none', 'minor': 'part', 'open': 'wait', 'check': 'wait'}
+HOW = {'translated': 'as %s', 'own switch': 'own Classic layout', 'allowed as is': 'sent as is', 'replacement': 'replaced by %s', 'connected': 'sent as is'}
+
+
+def packet_tables():
+	"""Every packet, both directions, one row each (audit.py)."""
+	server = audit.server_side()
+	client = audit.client_side()
+	sent = [r for r in server if r['check'] == 'ok']
+	routed = sum(1 for r in client if r['state'] == 'routed')
+	out = '<h2 class="gap" id="packets">Every packet, one by one</h2>'
+	out += ('<p class="lede">Read from the server code and the client\'s own handler and request tables (extracted from its Engine.dll). '
+		'Server to client: %d of %d aCis packets are sent on protocol 110, and every one of them lands on a client handler of the same kind '
+		'(by the client\'s name for it, or checked by hand where the names differ); the other %d are not sent (see the groups above). '
+		'Client to server: %d of the client\'s %d extra (D0) requests are routed; the rest are later Classic systems or were judged by hand.</p>') % (
+		len(sent), len(server), len(server) - len(sent), routed, len(client))
+	out += '<div class="controls"><input id="pq" type="search" placeholder="Filter packets (name, opcode, state)" aria-label="Filter packets"><span class="count" id="pcount"></span></div>'
+	out += '<h3 class="sub">Server to client <span class="cnt">%d</span></h3>' % len(server)
+	out += '<div class="tablewrap"><table class="score ptable"><thead><tr><th>aCis packet</th><th>On protocol 110</th><th>Opcode</th><th>Client handler</th><th>State</th></tr></thead><tbody>'
+	for r in server:
+		how = HOW.get(r['route'], '')
+		how = (how % r['sent']) if '%s' in how else (how or r['group'])
+		col = 'done' if r['check'] == 'ok' else 'none'
+		out += '<tr><td><code>%s</code></td><td class="note">%s</td><td><code>%s</code></td><td class="note">%s</td><td><span class="pill" style="background:var(--%s)">%s</span></td></tr>' % (
+			e(r['packet']), e(how), e(r['opcode']), e(r['handler']), col, e(CHECK_LABEL.get(r['check'], r['check'])))
+	out += '</tbody></table></div>'
+	out += '<h3 class="sub">Client to server (D0 requests) <span class="cnt">%d</span></h3>' % len(client)
+	out += '<div class="tablewrap"><table class="score ptable"><thead><tr><th>Opcode</th><th>Client request</th><th>Server</th><th>State</th></tr></thead><tbody>'
+	for r in client:
+		out += '<tr><td><code>%s</code></td><td><code>%s</code></td><td class="note">%s</td><td><span class="pill" style="background:var(--%s)">%s</span></td></tr>' % (
+			e(r['opcode']), e(r['request']), e(r['handler'] or r.get('note', '')), CLIENT_COLOR.get(r['state'], 'none'), e(CLIENT_LABEL.get(r['state'], r['state'])))
+	out += '</tbody></table></div>'
+	out += ('<script>(() => { const q = document.getElementById("pq"), rows = [...document.querySelectorAll(".ptable tbody tr")];'
+		' const run = () => { const t = q.value.trim().toLowerCase(); let n = 0; for (const r of rows) { const show = !t || r.textContent.toLowerCase().includes(t); r.hidden = !show; n += show; }'
+		' document.getElementById("pcount").textContent = n + " of " + rows.length + " packets"; };'
+		' q.addEventListener("input", run); run(); })();</script>')
+	return out
+
 
 
 def additions():

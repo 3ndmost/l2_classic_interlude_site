@@ -523,6 +523,8 @@ table.score { border-collapse: collapse; width: 100%; font-size: 14px; min-width
 .shot { display: block; border: 1px solid var(--line); border-radius: 4px; overflow: hidden; max-width: 100% }
 .shot img { display: block; height: 160px; width: auto; max-width: 100%; object-fit: cover }
 .shot:hover, .shot:focus-visible { border-color: var(--gold); outline: none }
+h3.sub { margin: 18px 0 8px }
+.ptable td { padding: 5px 12px }
 .charts { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px }
 .charts figure { margin: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 14px 16px }
 .charts figcaption { font: 600 14px var(--display); margin-bottom: 8px }
