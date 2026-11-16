@@ -16,6 +16,9 @@ OTHER_WAY = {
 	'DoorInfo': 'doors go out as StaticObjectInfo', 'DoorStatusUpdate': 'doors go out as StaticObjectInfo',
 	'ExPledgeCrestLarge': 'the large crest has its own Classic packets', 'ExFishingHpRegen': 'fishing runs by the FishingMode setting',
 	'ExFishingStartCombat': 'fishing runs by the FishingMode setting', 'ExEnchantSkillList': 'skill enchanting uses the Classic enchant window',
+	'BoatSay': 'a chat packet: goes out as ClassicCreatureSay, like all chat (boat captains announcements)',
+	'ShowPCCafeCouponShowUI': 'sent as ClassicShowCouponUI (the coupon window)',
+	'ExGetBossRecord': 'raid points show in the status window (ClassicUserInfo); the per-boss record list has no Classic window',
 }
 GROUPS = ['Connected', 'Classic replacement', 'Handled another way', 'Never sent by aCis', 'GM viewer', 'Obsolete', 'Not connected']
 

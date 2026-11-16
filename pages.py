@@ -20,10 +20,7 @@ PACKET_NOTES = {
 	'Not connected': 'aCis sends it and the Classic client never gets it',
 }
 GAP_NOTES = {
-	'BoatSay': "boat captains' announcements (departure, arrival)",
-	'ExGetBossRecord': 'the raid point record; the Classic client has no raid point window',
-	'ExPlayScene': 'the movie of quest 127 only',
-	'ShowPCCafeCouponShowUI': 'the PC Cafe coupon window (PC Cafe points are off by default)',
+	'ExPlayScene': 'the movie of quest 127 (Kamael: A Window to the Future); the client has it as FE:0x5D',
 }
 STATE_COLORS = {'tested': 'done', 'mostly': 'prog', 'partly': 'part', 'untested': 'wait', 'unchecked': 'none'}
 STATE_LABELS = {'tested': 'Tested', 'mostly': 'Mostly tested', 'partly': 'Partly tested', 'untested': 'Code ready, untested', 'unchecked': 'Not checked'}
