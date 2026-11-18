@@ -15,6 +15,7 @@ one for private details before it goes on the public page.
 - [Quests & tutorial] The Kamael movie of quest 127 | Rodemai's story now plays full screen as on Interlude, with its original music, and players can watch it again at step 8 before moving on. | cc901ef1 28c19a67 8aecbc2 c40c5df
 - [Client UI] Movies play on a Classic server | The client never loaded its movie table on a Classic server; now every client movie plays, and only GMs can stop one (Esc). | c13c3f2 28c19a67
 - [GM tools] //playmovie and quest reset | GMs can play any client movie and reset a finished quest from the Admin tab. | cc901ef1 24431a6e
+- [Client UI] Movies survive a window switch | Switching to another window during the Kamael movie no longer freezes it; it is now encoded like the client's own movies. | 05eb59f
 
 ## 2026-11-14
 - [GM tools] Admin tab in Server Management | Shutdown, restart and "shutdown all" (game and login server) with saved countdowns and a double-press safety, plus every GM tool as a button with a tooltip. | cc75a3f1 0fbd610e
