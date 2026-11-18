@@ -53,4 +53,4 @@ system works through the Classic client.
 | Community board, GM and admin tools | 2 | tested | |
 | Events | 1 | tested | Change of Heart tested 2026-11-14 |
 | Lottery, Monster Race, wedding | 1 | unchecked | |
-| Cinematics | 1 | mostly | Quest 127's scene not supported |
+| Cinematics | 1 | tested | Quest 127's movie with replay, tested 2026-11-18 |
