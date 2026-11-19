@@ -11,6 +11,9 @@ Maps & zones, Client UI, Other). The commits (their first characters are enough)
 Windows screenshots (Pictures/Screenshots, "Screenshot <date> <time>.png"), copied small into docs/shots: check each
 one for private details before it goes on the public page.
 
+## 2026-11-19
+- [GM tools] Server Management opens on Admin | //manage now opens on the Admin tab, where the GM tools are. | 86fa713c
+
 ## 2026-11-18
 - [Quests & tutorial] The Kamael movie of quest 127 | Rodemai's story now plays full screen as on Interlude, with its original music, and players can watch it again at step 8 before moving on. | cc901ef1 28c19a67 8aecbc2 c40c5df
 - [Client UI] Movies play on a Classic server | The client never loaded its movie table on a Classic server; now every client movie plays, and only GMs can stop one (Esc). | c13c3f2 28c19a67
