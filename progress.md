@@ -38,7 +38,7 @@ system works through the Classic client.
 | Seven Signs, Festival of Darkness, catacombs | 3 | untested | Record window, sky and zone names done; the festival never played |
 | Dimensional Rift and Four Sepulchers | 2 | unchecked | |
 | Raid and grand bosses, raid points | 2 | untested | The client has no raid point window |
-| Quests (343 on the server) | 3 | partly | Journal, markers and a few quests tested; most quests never played on 110 |
+| Quests (343 on the server) | 3 | partly | Journal, markers and a few quests tested (quest 127 end to end, 2026-11-18); most quests never played on 110 |
 | Tutorial, newbie guide, daily missions | 2 | tested | |
 | Pets and summons | 3 | mostly | Fixed and tested 2026-11-13 |
 | Mounts: strider and wyvern | 1 | mostly | Wyvern not tried |

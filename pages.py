@@ -22,7 +22,7 @@ PACKET_NOTES = {
 	'No Classic counterpart': 'the Classic client has nothing that could show it',
 }
 GAP_NOTES = {
-	'ExPlayScene': 'the movie of quest 127 (Kamael: A Window to the Future); the client has it as FE:0x5D',
+	'ExPlayScene': "the movie of quest 127 (Kamael: A Window to the Future): sent as ClassicExShowUsm, the client's full-screen movie 149",
 }
 STATE_COLORS = {'tested': 'done', 'mostly': 'prog', 'partly': 'part', 'untested': 'wait', 'unchecked': 'none'}
 STATE_LABELS = {'tested': 'Tested', 'mostly': 'Mostly tested', 'partly': 'Partly tested', 'untested': 'Code ready, untested', 'unchecked': 'Not checked'}

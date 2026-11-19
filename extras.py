@@ -19,10 +19,11 @@ OTHER_WAY = {
 	'BoatSay': 'a chat packet: goes out as ClassicCreatureSay, like all chat (boat captains announcements)',
 	'ShowPCCafeCouponShowUI': 'sent as ClassicShowCouponUI (the coupon window)',
 	'ExGetBossRecord': 'raid points show in the status window (ClassicUserInfo); the per-boss record list has no Classic window',
+	'ExPlayScene': "quest 127's movie: sent as ClassicExShowUsm, the client's full-screen movie (movie 149, the Kamael slideshow); the client's own ExPlayScene handler does nothing",
 }
 GROUPS = ['Connected', 'Classic replacement', 'Handled another way', 'No Classic counterpart', 'Never sent by aCis', 'GM viewer', 'Obsolete', 'Not connected']
 # Packets the Classic client cannot use at all (checked 2026-11-16).
-NO_COUNTERPART = {'ExPlayScene': "quest 127's movie: the client's ExPlayScene handler reads one number and does nothing, and its movie list has no Kamael movie; the quest goes on without it"}
+NO_COUNTERPART = {}   # ExPlayScene (quest 127's movie) left it 2026-11-17: it goes out as ClassicExShowUsm
 
 
 EMAIL = re.compile(r'[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}')
