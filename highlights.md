@@ -12,6 +12,7 @@ Windows screenshots (Pictures/Screenshots, "Screenshot <date> <time>.png"), copi
 one for private details before it goes on the public page.
 
 ## 2026-11-19
+- [Events] Lottery numbers show on Classic | The Lottery Ticket Seller's number grid was empty on the Classic client; it now shows numbered buttons 1-20, chosen ones pressed and listed. | 7c8bcb1e
 - [GM tools] Server Management opens on Admin | //manage now opens on the Admin tab, where the GM tools are. | 86fa713c
 
 ## 2026-11-18
