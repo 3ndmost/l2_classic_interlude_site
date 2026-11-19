@@ -33,7 +33,7 @@ system works through the Classic client.
 | Castle sieges | 3 | tested | Tested 2026-10-24 |
 | Clan halls: sieges, auctions, functions | 2 | partly | Auctions and decorations tested; clan hall sieges not |
 | Manor | 2 | partly | Code mapped; the 06:00 charge and per-castle lists await a test |
-| Command channel | 1 | partly | Loot rule not tried |
+| Command channel | 1 | tested | Adena distribution only; the loot rule is not used on this server |
 | Olympiad and heroes | 3 | partly | Matches and hero list tested; tower observation and slash commands not |
 | Seven Signs, Festival of Darkness, catacombs | 3 | untested | Record window, sky and zone names done; the festival never played |
 | Dimensional Rift and Four Sepulchers | 2 | unchecked | |
