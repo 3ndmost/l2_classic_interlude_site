@@ -13,6 +13,7 @@ one for private details before it goes on the public page.
 
 ## 2026-11-24
 - [Maps & zones] Monster Arena on Classic | The Classic client draws a walled Monster Arena next to the Dion race track; the server now has its floor, walls and stands, the arena combat zone covers its floor, and two Arena Managers take players in and out (free), with new HP Recovery beside CP Recovery. | 2b20bd02 bf677937 819415b9
+- [Events] Monster Race runners race for real | On the Classic client all eight runners ran side by side. Each runner now gets its own pace, the client runs it at that speed, and the field spreads out smoothly with the announced winner first. | 94575851 5039ad06 a94d5f21 56e7e38
 - [Events] Monster Race GM window | //monrace shows the race, its lanes, bets and odds, and starts or ends the ticket sales and the race by hand. | d40c7e66 4b93f9bf
 - [GM tools] Admin tab in groups | The Admin tab of Server Management lists its tools in eight groups (players, messages, security, events, NPCs, your character, world and geodata, tests). | 99bdd1c3
 - [Client UI] 48 macros | The Classic Macro window holds 48 macros; the server allowed only 24 and now allows 48. | 64c982d3 0956c5e
