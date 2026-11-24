@@ -52,5 +52,5 @@ system works through the Classic client.
 | World Info, maps, region info | 2 | tested | |
 | Community board, GM and admin tools | 2 | tested | |
 | Events | 1 | tested | Change of Heart tested 2026-11-14 |
-| Lottery, Monster Race, wedding | 1 | partly | Lottery tested 2026-11-23 (original number tiles); Monster Race and wedding not tried |
+| Lottery, Monster Race, wedding | 1 | partly | Lottery tested 2026-11-23 (original number tiles); Monster Race tickets, messages and GM window tested 2026-11-24; wedding not tried |
 | Cinematics | 1 | tested | Quest 127's movie with replay, tested 2026-11-18 |

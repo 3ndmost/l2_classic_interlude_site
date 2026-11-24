@@ -11,6 +11,12 @@ Maps & zones, Client UI, Other). The commits (their first characters are enough)
 Windows screenshots (Pictures/Screenshots, "Screenshot <date> <time>.png"), copied small into docs/shots: check each
 one for private details before it goes on the public page.
 
+## 2026-11-24
+- [Maps & zones] Monster Arena on Classic | The Classic client draws a walled Monster Arena next to the Dion race track; the server now has its floor, walls and stands, the arena combat zone covers its floor, and two Arena Managers take players in and out (free), with new HP Recovery beside CP Recovery. | 2b20bd02 bf677937 819415b9
+- [Events] Monster Race GM window | //monrace shows the race, its lanes, bets and odds, and starts or ends the ticket sales and the race by hand. | d40c7e66 4b93f9bf
+- [GM tools] Admin tab in groups | The Admin tab of Server Management lists its tools in eight groups (players, messages, security, events, NPCs, your character, world and geodata, tests). | 99bdd1c3
+- [Client UI] 48 macros | The Classic Macro window holds 48 macros; the server allowed only 24 and now allows 48. | 64c982d3 0956c5e
+
 ## 2026-11-19
 - [Events] Lottery numbers show on Classic | The Lottery Ticket Seller's number grid was empty on the Classic client; it now shows Interlude's original parchment tiles 1-20. | 7c8bcb1e 59c81fe5
 - [GM tools] Server Management opens on Admin | //manage now opens on the Admin tab, where the GM tools are. | 86fa713c
