@@ -11,6 +11,12 @@ Maps & zones, Client UI, Other). The commits (their first characters are enough)
 Windows screenshots (Pictures/Screenshots, "Screenshot <date> <time>.png"), copied small into docs/shots: check each
 one for private details before it goes on the public page.
 
+## 2026-11-25
+- [Maps & zones] Goddard's holy room altars | The Altar of Fire and the Altar of Water floated in Goddard Castle's holy room: Classic's map asked for a pedestal no client has. The pedestals are back, lit like the room, and both altars now stand centred on them; //npcdraw lets a GM place where the Classic client draws an NPC. | c3e2742 10b1d41 7835f9c dec4e5c4 420194c5 8e1621a5 | shots: 2026-11-25 202016
+- [Maps & zones] Rune library entrance | A remade Classic bookcase stood shifted and floating in the Rune library's doorway; Rune town is drawn with Interlude's models again and the bookcase stands centred on the floor. | e1948e9 cde696a
+- [Maps & zones] Primeval Isle rocks, Dragon Valley bridges, Mithril Mines | Classic's remakes of these models did not fit the Interlude maps (streaked rocks, sunken bridges, broken mine walls); they use Interlude's models and textures now. | 2173a3e e1948e9 6c151dd 74c67eb
+- [GM tools] GMs enter hidden and fast | A GM now logs in hidden with GM speed 5, with a message for each; on the Classic client GMs were never set up at login (no hide, no GM list, no bot report notice), which is fixed too. | 6315878a 19c609e8
+
 ## 2026-11-24
 - [Maps & zones] Monster Arena on Classic | The Classic client draws a walled Monster Arena next to the Dion race track; the server now has its floor, walls and stands, the arena combat zone covers its floor, and two Arena Managers take players in and out (free), with new HP Recovery beside CP Recovery. | 2b20bd02 bf677937 819415b9
 - [Events] Monster Race runners race for real | On the Classic client all eight runners ran side by side. Each runner now gets its own pace, the client runs it at that speed, and the field spreads out smoothly with the announced winner first. | 94575851 5039ad06 a94d5f21 56e7e38
