@@ -16,6 +16,7 @@ one for private details before it goes on the public page.
 - [Maps & zones] Rune library entrance | A remade Classic bookcase stood shifted and floating in the Rune library's doorway; Rune town is drawn with Interlude's models again and the bookcase stands centred on the floor. | e1948e9 cde696a
 - [Maps & zones] Primeval Isle rocks, Dragon Valley bridges, Mithril Mines | Classic's remakes of these models did not fit the Interlude maps (streaked rocks, sunken bridges, broken mine walls); they use Interlude's models and textures now. | 2173a3e e1948e9 6c151dd 74c67eb
 - [Maps & zones] Fantasy Isle and the provisional clan halls walkable | The Classic client draws 32 map squares Interlude never had (Fantasy Isle, the Orchid, Ellia and Laurell provisional clan halls...); the server had no ground for them and nobody could move there. Their geodata now comes from a Classic geodata pack, matched against the client maps. | 7f2df1af
+- [Maps & zones] Devastated Castle named | Most of Devastated Castle read Fields of Massacre on the Classic client; the whole castle, as the server outlines it, now reads Devastated Castle. | 983073d 73cea863
 - [GM tools] GMs enter hidden and fast | A GM now logs in hidden with GM speed 5, with a message for each; on the Classic client GMs were never set up at login (no hide, no GM list, no bot report notice), which is fixed too. | 6315878a 19c609e8
 
 ## 2026-11-24
