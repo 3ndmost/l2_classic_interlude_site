@@ -11,6 +11,10 @@ Maps & zones, Client UI, Other). The commits (their first characters are enough)
 Windows screenshots (Pictures/Screenshots, "Screenshot <date> <time>.png"), copied small into docs/shots: check each
 one for private details before it goes on the public page.
 
+## 2026-11-27
+- [Maps & zones] Fantasy Isle's beaches open | Players ran in place at the island's shore: the Classic map rings Fantasy Isle with 13 invisible walls, from just above the sea floor up into the sky. They are gone, so the beaches and the sea can be reached from the golf course and the rest of the island; rocks and buildings still block as before, and the Underground Coliseum below is untouched. | a4c0cd0
+- [GM tools] Dashboard map: territory hover switch | A button on the dashboard map turns the territory highlight on mouse-over off and on; a click still keeps a territory selected, and the browser remembers the choice. | 6585e0ef
+
 ## 2026-11-26
 - [Maps & zones] A Scroll of Escape keeps you in your Provisional Clan Hall | Each of the nine Provisional Clan Halls (Orchid, Ellia and Laurell 1 to 3) is now an area of its own, and a Scroll of Escape to the nearest town used inside one brings you back to that hall's arrival spot; scrolls to a named town, castle or clan hall work as before. | 014b1de0
 - [GM tools] Server dashboard: a live map for GMs | The dashboard map now shows which geodata map squares the server has loaded and the memory each takes, over a sharper Interlude world map with Fantasy Isle drawn in. A click keeps a territory selected; a click on a player opens their panel (place, map square, race, class, clan, time online) with Locate and Track, which keeps the map on them as they move; Ctrl+click gives the world coordinates of any spot. | b2962966 1bdaa466 e2455423 625f3332 962c7c6a | shots: 2026-11-26 224624, 2026-11-26 224647
