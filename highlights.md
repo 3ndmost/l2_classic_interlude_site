@@ -12,6 +12,8 @@ Windows screenshots (Pictures/Screenshots, "Screenshot <date> <time>.png"), copi
 one for private details before it goes on the public page.
 
 ## 2026-11-27
+- [Maps & zones] Dimensional Rift map | The Map window showed nothing inside the Dimensional Rift: no client has a map of it. It now shows the Rift's rooms, cut from a top-down picture whose layout matches our client's. | af19bbe
+- [GM tools] Dashboard map: NPC panel | A click on an NPC opens a panel like the player one: name, title, level, type, HP or dead, NPC and object id, location, map square and place, with Locate and Track. | d341f996
 - [GM tools] GM speed 6 and saved GM switches | GMs get a sixth GM speed, twice speed 5, with its buff icon and //gmspeed 6; a GM still logs in at speed 5. The Admin tab's on/off pairs (fall damage, weight limit, world chat, captcha) are now single switches that show their state and keep it after logging out and after a restart. | dad19d4e 23575ccc 3bb907a6 bed9882
 - [Olympiad] Every colosseum visitable | The GM teleport page lists the Olympiad's real arenas, plus the Classic map's four colosseum styles (redesigned, Hero's Trail, redesigned underground and the Classic colosseum). | 92e35d7c 01978ad4
 - [Maps & zones] Classic places at a click | GM Teleport > Other Location > Classic Locations gathers the places only the Classic map has; the game server's memory is trimmed by loading geodata only where needed, and a dashboard Memory page shows where the RAM goes. | 70ce0163 8ae478d0 261b3f75 b3e5ab45
