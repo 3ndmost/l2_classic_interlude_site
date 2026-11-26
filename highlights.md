@@ -12,6 +12,11 @@ Windows screenshots (Pictures/Screenshots, "Screenshot <date> <time>.png"), copi
 one for private details before it goes on the public page.
 
 ## 2026-11-27
+- [GM tools] GM speed 6 and saved GM switches | GMs get a sixth GM speed, twice speed 5, with its buff icon and //gmspeed 6; a GM still logs in at speed 5. The Admin tab's on/off pairs (fall damage, weight limit, world chat, captcha) are now single switches that show their state and keep it after logging out and after a restart. | dad19d4e 23575ccc 3bb907a6 bed9882
+- [Olympiad] Every colosseum visitable | The GM teleport page lists the Olympiad's real arenas, plus the Classic map's four colosseum styles (redesigned, Hero's Trail, redesigned underground and the Classic colosseum). | 92e35d7c 01978ad4
+- [Maps & zones] Classic places at a click | GM Teleport > Other Location > Classic Locations gathers the places only the Classic map has; the game server's memory is trimmed by loading geodata only where needed, and a dashboard Memory page shows where the RAM goes. | 70ce0163 8ae478d0 261b3f75 b3e5ab45
+- [Client UI] Random loading and start-up pictures | Each load shows one of 27 loading pictures, and the start-up screen one of the 5 alternative Classic pictures. | bb52d57 af4d62c
+- [Maps & zones] Provisional Clan Hall titles | Entering a hall shows its own name on one line, e.g. "Provisional Clan Hall - Ellia 2". | 1352ccb 014b1de0
 - [Maps & zones] Fantasy Isle's beaches open | Players ran in place at the island's shore: the Classic map rings Fantasy Isle with 13 invisible walls, from just above the sea floor up into the sky. They are gone, so the beaches and the sea can be reached from the golf course and the rest of the island; rocks and buildings still block as before, and the Underground Coliseum below is untouched. | a4c0cd0
 - [GM tools] Dashboard map: territory hover switch | A button on the dashboard map turns the territory highlight on mouse-over off and on; a click still keeps a territory selected, and the browser remembers the choice. | 6585e0ef
 
