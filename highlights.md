@@ -11,6 +11,9 @@ Maps & zones, Client UI, Other). The commits (their first characters are enough)
 Windows screenshots (Pictures/Screenshots, "Screenshot <date> <time>.png"), copied small into docs/shots: check each
 one for private details before it goes on the public page.
 
+## 2026-11-26
+- [Maps & zones] Fantasy Isle, Underground Coliseum and Provisional Clan Halls named | These three places read "Neutral Waterways" on the Classic client: its place-name map leaves their map squares blank. The Classic 2.1 client draws them in a file our client lacks; its outlines are copied in and the places now carry their names, in game and in the server's reports. | 2a38e42 49d8d4d4
+
 ## 2026-11-25
 - [Maps & zones] Goddard's holy room altars | The Altar of Fire and the Altar of Water floated in Goddard Castle's holy room: Classic's map asked for a pedestal no client has. The pedestals are back, lit like the room, and both altars now stand centred on them; //npcdraw lets a GM place where the Classic client draws an NPC. | c3e2742 10b1d41 7835f9c dec4e5c4 420194c5 8e1621a5 | shots: 2026-11-25 202016
 - [Maps & zones] Rune library entrance | A remade Classic bookcase stood shifted and floating in the Rune library's doorway; Rune town is drawn with Interlude's models again and the bookcase stands centred on the floor. | e1948e9 cde696a
