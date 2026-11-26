@@ -12,6 +12,7 @@ Windows screenshots (Pictures/Screenshots, "Screenshot <date> <time>.png"), copi
 one for private details before it goes on the public page.
 
 ## 2026-11-26
+- [Maps & zones] A Scroll of Escape keeps you in your Provisional Clan Hall | Each of the nine Provisional Clan Halls (Orchid, Ellia and Laurell 1 to 3) is now an area of its own, and a Scroll of Escape to the nearest town used inside one brings you back to that hall's arrival spot; scrolls to a named town, castle or clan hall work as before. | 014b1de0
 - [GM tools] Server dashboard: a live map for GMs | The dashboard map now shows which geodata map squares the server has loaded and the memory each takes, over a sharper Interlude world map with Fantasy Isle drawn in. A click keeps a territory selected; a click on a player opens their panel (place, map square, race, class, clan, time online) with Locate and Track, which keeps the map on them as they move; Ctrl+click gives the world coordinates of any spot. | b2962966 1bdaa466 e2455423 625f3332 962c7c6a | shots: 2026-11-26 224624, 2026-11-26 224647
 - [Maps & zones] Fantasy Isle, Underground Coliseum and Provisional Clan Halls named | These three places read "Neutral Waterways" on the Classic client: its place-name map leaves their map squares blank. The Classic 2.1 client draws them in a file our client lacks; its outlines are copied in and the places now carry their names, in game and in the server's reports. | 2a38e42 49d8d4d4 | shots: 2026-11-26 163816, 2026-11-26 163828, 2026-11-26 163803
 
