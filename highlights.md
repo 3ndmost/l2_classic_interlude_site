@@ -12,6 +12,7 @@ Windows screenshots (Pictures/Screenshots, "Screenshot <date> <time>.png"), copi
 one for private details before it goes on the public page.
 
 ## 2026-11-27
+- [GM tools] Every GM tracked from login | GMs go on the dashboard's tracking list by themselves at each login and stay there; their movements go only when cleared or saved and deleted by hand. The tracking panel lists GMs, characters and saved sessions apart, each foldable, and the history can show one point in ten. | 72f815c4 2420b482 6ad611c1 cbadf4fc
 - [GM tools] GMs asked before entering a switched-off place | A GM teleporting into Fantasy Isle or the Underground Coliseum while it is switched off gets a window saying the place has no ground loaded, with Teleport! and Cancel; either way the teleport page comes back. | 41c73728 b0efd61e bf16e9d3
 - [GM tools] Dashboard map: area selection and movement tracking | Alt + drag selects any area of the map and lists its characters and NPCs, each line opening to their full details; over a crowded spot the map zooms 8 times closer. Characters put on the Tracking list have every movement stored with the time and place, teleports, logins, logouts and deaths included, shown as a list and as a line on the map, and kept as saved sessions. | 15ffe530 7c0b0cf7 fe2fb477 | shots: 2026-11-27 112049, 2026-11-27 112739
 - [Maps & zones] Fantasy Isle closed at sea when switched off | With Fantasy Isle switched off (to save the server's memory), players stop at an invisible wall far out at sea, the island still in sight; switched on, the wall is gone. | 5cc5d42c
