@@ -12,6 +12,7 @@ Windows screenshots (Pictures/Screenshots, "Screenshot <date> <time>.png"), copi
 one for private details before it goes on the public page.
 
 ## 2026-11-27
+- [Client UI] NPCs on the Map window | Many NPCs had no dot on the Map unless targeted: Classic hides the NPCs it does not use itself (Hasha, the Dimensional Rift's NPCs, guards, castle staff, many monsters). About 2300 of them now show (grey dots, gatekeeper and warehouse icons, red monster dots); raid bosses and their minions, chests and objects stay hidden as in Classic. | d3c8b5f
 - [Maps & zones] Dimensional Rift map | The Map window showed nothing inside the Dimensional Rift: no client has a map of it. It now shows the Rift's rooms, cut from a top-down picture whose layout matches our client's. | af19bbe
 - [GM tools] Dashboard map: NPC panel | A click on an NPC opens a panel like the player one: name, title, level, type, HP or dead, NPC and object id, location, map square and place, with Locate and Track. | d341f996
 - [GM tools] GM speed 6 and saved GM switches | GMs get a sixth GM speed, twice speed 5, with its buff icon and //gmspeed 6; a GM still logs in at speed 5. The Admin tab's on/off pairs (fall damage, weight limit, world chat, captcha) are now single switches that show their state and keep it after logging out and after a restart. | dad19d4e 23575ccc 3bb907a6 bed9882
