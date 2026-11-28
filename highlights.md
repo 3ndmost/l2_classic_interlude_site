@@ -12,6 +12,8 @@ Windows screenshots (Pictures/Screenshots, "Screenshot <date> <time>.png"), copi
 one for private details before it goes on the public page.
 
 ## 2026-11-28
+- [GM tools] Adventurer bots learn which quests are too dangerous | When questers die 3 times on a quest at a level, every quester of that level or below leaves it; the list survives restarts. Each bot's class shows a green 1st, 2nd or 3rd on the Adventurers tab. | 2f76593b 8a809e36
+- [Other] Monsters give up targets they cannot reach | Monsters chasing someone behind a wall used to ask for a path forever and fill the server console; they now give up after a while. | e9564f85 2f76593b
 - [GM tools] Live monster numbers and server rates | Beside the respawn speed, the dashboard's Overview now sets how many ordinary monsters each hunting ground holds (normal, 2, 5 or 10 times) and multiplies the server's rates (experience, SP, adena, drops, spoil, quest drops and rewards) from 1 to 500 times, live and kept across restarts. | d41b6c25 559c70a9
 - [GM tools] Adventurer bots: age, a click on the map, random class and random delete | The Adventurers tab shows each bot's age (with its creation date and total time online), opens a bot's window with a click on it on the map, creates bots with a random goal class by default, and can delete a chosen number of bots at random for good. | a1ee9c33 11618465 c18f7d2b
 - [GM tools] Adventurer bots live in their towns | Bots stay in their race's home region until about level 20, walk into shops by the door to reach each NPC, keep a market of shot shops run by dwarven crafters, and follow safe routes round cliffs and buildings. | c84b77a9 98407d5f 47c0a43d 255acaa5 e026bec3
