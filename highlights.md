@@ -12,6 +12,7 @@ Windows screenshots (Pictures/Screenshots, "Screenshot <date> <time>.png"), copi
 one for private details before it goes on the public page.
 
 ## 2026-11-28
+- [GM tools] Live monster respawn speed | The dashboard's Overview can make ordinary monsters respawn 2, 5 or 10 times faster, live and kept across restarts; raid and grand bosses keep their own times. | 0a82ed60
 - [GM tools] Adventurer bots test the quests | 40 % of the adventurer bots now play the server's quests through as a player does: they talk to the quest NPCs through the same links a player clicks, hunt the quest's monsters and collect the rewards, showing a green "Questing" title and saying their quest and stage in the chat. A new Quests tab on the dashboard lists every quest taken, each bot's steps with a green tick per step passed, and any problem with the full picture of when it happened. In the first five minutes of the latest test, 275 quest runs, 84 quests finished and 188 steps passed. | 826871d6 20e1a836 6f3f56dc 7fa1f508
 
 ## 2026-11-27
