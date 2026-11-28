@@ -11,6 +11,9 @@ Maps & zones, Client UI, Other). The commits (their first characters are enough)
 Windows screenshots (Pictures/Screenshots, "Screenshot <date> <time>.png"), copied small into docs/shots: check each
 one for private details before it goes on the public page.
 
+## 2026-11-28
+- [GM tools] Adventurer bots test the quests | 40 % of the adventurer bots now play the server's quests through as a player does: they talk to the quest NPCs through the same links a player clicks, hunt the quest's monsters and collect the rewards, showing a green "Questing" title and saying their quest and stage in the chat. A new Quests tab on the dashboard lists every quest taken, each bot's steps with a green tick per step passed, and any problem with the full picture of when it happened. In the first five minutes of the latest test, 275 quest runs, 84 quests finished and 188 steps passed. | 826871d6 20e1a836 6f3f56dc 7fa1f508
+
 ## 2026-11-27
 - [GM tools] Test bots from the dashboard | A new Bots tab spawns groups of test characters (no game clients) from presets: class, level, gear, skills, buffs, clan and alliance, a grey BOT title and realistic names, at any spot of its own map, up to a live maximum of 2000. Groups are deleted with a click, the server's lag, CPU and memory show beside them, and the Memory page measures what the bots take. | 9fb347ec 82cba760 2079e2ba | shots: 2026-11-27 141950
 - [GM tools] Every GM tracked from login | GMs go on the dashboard's tracking list by themselves at each login and stay there; their movements go only when cleared or saved and deleted by hand. The tracking panel lists GMs, characters and saved sessions apart, each foldable, and the history can show one point in ten. | 72f815c4 2420b482 6ad611c1 cbadf4fc
